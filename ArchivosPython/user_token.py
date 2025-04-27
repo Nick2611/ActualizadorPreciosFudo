@@ -22,9 +22,6 @@ def retrieve_input(e_1, e_2, w):
         messagebox.showerror("Error", "La API Secret no puede estar vacía.")
         return False  # Indica fallo
 
-    # You can add more sophisticated validation here, e.g.,
-    # checking the format or length of the keys.
-
     api_key = api_key_value
     api_secret = api_secret_value
     w.destroy()
