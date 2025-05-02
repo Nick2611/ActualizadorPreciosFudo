@@ -30,7 +30,6 @@ def listar_categorias():
         items = response.json()
         items_json_str = json.dumps(items)
         items_json = json.loads(items_json_str)
-        print(items_json)
     except requests.exceptions.HTTPError as errh:
         print(f"Error http {errh}")
         sleep(1)
