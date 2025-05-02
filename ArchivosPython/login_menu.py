@@ -1,159 +1,210 @@
-import boto3
+import sys
+import os
 import hmac
 import hashlib
 import base64
-import tkinter as tk
-import os
-from time import sleep
+import boto3
+import time
+from botocore.exceptions import ClientError
+from PyQt6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QLineEdit, QStackedLayout
+)
+from PyQt6.QtCore import pyqtSignal
+from dotenv import load_dotenv
 
+load_dotenv()
 AWS_REGION = os.getenv('AWS_REGION')
 USER_POOL_ID = os.getenv('USER_POOL_ID')
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
-# Initialize Cognito client
 client = boto3.client('cognito-idp', region_name=AWS_REGION)
 
-def get_secret_hash(username):
-    message = username + CLIENT_ID
-    dig = hmac.new(
-        CLIENT_SECRET.encode('utf-8'),
-        message.encode('utf-8'),
-        hashlib.sha256
-    ).digest()
-    return base64.b64encode(dig).decode()
 
-def sign_up(username, password, user_entered_username, api_key, api_secret):
- # --- Now call sign_up ---
-    response = client.sign_up(
-        ClientId=CLIENT_ID,
-        Username=username,  # This is the email, used as the 'Username'
-        Password=password,
-        SecretHash=get_secret_hash(username),
-        UserAttributes=[
-            {'Name': 'email', 'Value': username.strip()},  # Use 'email' as the Username
-            {'Name': 'custom:Username', 'Value': user_entered_username},  # Store the custom username here
-            {'Name': 'custom:ApiKey', 'Value': api_key.strip()},
-            {'Name': 'custom:ApiSecret', 'Value': api_secret.strip()},
-        ]
-    )
-    print("Sign-up successful!")
+class LoginSignupApp(QWidget):
+    login_successful = pyqtSignal(dict)  # Signal to emit authentication result
 
-def confirm_sign_up(username,confirmation_code):
-    # Confirm sign-up
-    response = client.confirm_sign_up(
-        ClientId=CLIENT_ID,
-        Username=username,
-        ConfirmationCode= confirmation_code,
-        SecretHash=get_secret_hash(username),
-    )
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Login / Signup")
+        self.setBaseSize(500, 500)
 
-    print(response)
+        # Main layout
+        main_layout = QVBoxLayout()
+        main_widget = QWidget()
 
-def sign_in(username, password):
-    # Call Cognito to authenticate
-    try:
-        response = client.initiate_auth(
-            ClientId=CLIENT_ID,
-            AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                'USERNAME': username,
-                'PASSWORD': password,
-                'SECRET_HASH': get_secret_hash(username)
-            }
-        )
-        print("Authentication successful!")
-        print(response['AuthenticationResult'])  # contains IdToken, AccessToken, RefreshToken
+        # Top buttons
+        btn_layout = QHBoxLayout()
+        self.login_btn = QPushButton("Log In")
+        self.signup_btn = QPushButton("Sign Up")
+        self.login_btn.clicked.connect(lambda: self.stack.setCurrentIndex(1))
+        self.signup_btn.clicked.connect(lambda: self.stack.setCurrentIndex(2))
+        btn_layout.addWidget(self.login_btn)
+        btn_layout.addWidget(self.signup_btn)
+        main_layout.addLayout(btn_layout)
 
-    except client.exceptions.NotAuthorizedException:
-        print("Incorrect username or password.")
-    except client.exceptions.UserNotConfirmedException:
-        print("User is not confirmed.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        # Stacked layout for forms
+        self.stack = QStackedLayout()
 
-# GUI Creation
+        # Log In form
+        login_widget = QWidget()
+        login_layout = QVBoxLayout()
+        login_layout.addWidget(QLabel("Email:"))
+        self.log_in_email = QLineEdit()
+        login_layout.addWidget(self.log_in_email)
 
-def show_frame(frame):
-    frame.tkraise()
+        login_layout.addWidget(QLabel("Password:"))
+        self.log_in_password = QLineEdit()
+        login_layout.addWidget(self.log_in_password)
 
-root = tk.Tk()
-root.geometry("400x300")
+        self.send_login = QPushButton("Log in")
+        self.send_login.clicked.connect(self.check_login_data)
+        login_layout.addWidget(self.send_login)
 
-# Configure the grid
-root.rowconfigure(0, weight=1)
-root.columnconfigure(0, weight=1)
+        login_widget.setLayout(login_layout)
 
-main_frame = tk.Frame(root, background='#ffffff')
-login_frame = tk.Frame(root, background='#ffffff')
-signup_frame = tk.Frame(root, background='#ffffff')
-confirmation_frame = tk.Frame(root, background='#ffffff')
+        # Sign Up form
+        signup_widget = QWidget()
+        signup_layout = QVBoxLayout()
 
-for frame in (login_frame, signup_frame, main_frame, confirmation_frame):
-    frame.grid(row=0, column=0, sticky="nsew")
+        signup_layout.addWidget(QLabel("Email:"))
+        self.email = QLineEdit()
+        signup_layout.addWidget(self.email)
 
-tk.Button(main_frame, text="Go to Sign Up", command=lambda: show_frame(signup_frame)).pack(pady=10)
-tk.Button(main_frame, text="Go to Log in", command=lambda: show_frame(login_frame)).pack()
+        signup_layout.addWidget(QLabel("Username:"))
+        self.username = QLineEdit()
+        signup_layout.addWidget(self.username)
 
-# Build login frame
-#Email
-tk.Label(login_frame, text="Email", font=("Helvetica", 16)).pack(pady=10)
-email = tk.Entry(login_frame, width=30)
-email.pack(pady=10)
+        signup_layout.addWidget(QLabel("Password:"))
+        self.password = QLineEdit()
+        signup_layout.addWidget(self.password)
 
-#Password
-tk.Label(login_frame, text="Password", font=("Helvetica", 16)).pack(pady=10)
-password = tk.Entry(login_frame, width=30)
-password.pack(pady=10)
+        signup_layout.addWidget(QLabel("Api key:"))
+        self.api_key = QLineEdit()
+        signup_layout.addWidget(self.api_key)
 
-tk.Button(login_frame, text="Log In", command=lambda: sign_in(email.get(), password.get())).pack(pady=10)
+        signup_layout.addWidget(QLabel("Api secret:"))
+        self.api_secret = QLineEdit()
+        signup_layout.addWidget(self.api_secret)
 
-# Build signup frame
-#Email
-tk.Label(signup_frame, text="Email", font=("Helvetica", 16)).pack(pady=10)
-email = tk.Entry(signup_frame, width=30)
-email.pack(pady=10)
+        self.send_info = QPushButton("Sign Up")
+        self.send_info.clicked.connect(self.send_sign_up_data)
+        signup_layout.addWidget(self.send_info)
 
-#Password
-tk.Label(signup_frame, text="Password", font=("Helvetica", 16)).pack(pady=10)
-password = tk.Entry(signup_frame, width=30)
-password.pack(pady=10)
+        signup_widget.setLayout(signup_layout)
 
-#Username
-tk.Label(signup_frame, text="Username", font=("Helvetica", 16)).pack(pady=10)
-username = tk.Entry(signup_frame, width=30)
-username.pack(pady=10)
+        # confirmation form
+        confirmation_widget = QWidget()
+        confirmation_layout = QVBoxLayout()
+        confirmation_layout.addWidget(QLabel("Confirmation Code:"))
+        self.confirmation_code = QLineEdit()
+        confirmation_layout.addWidget(self.confirmation_code)
+        self.confirmation_buttton = QPushButton("Confirm")
+        self.confirmation_buttton.clicked.connect(self.send_confirmation_code)
+        confirmation_layout.addWidget(self.confirmation_buttton)
+        confirmation_widget.setLayout(confirmation_layout)
 
-#API Key
-tk.Label(signup_frame, text="Api key", font=("Helvetica", 16)).pack(pady=10)
-api_key = tk.Entry(signup_frame, width=30)
-api_key.pack(pady=10)
+        # Add both widgets to stack
+        self.stack.addWidget(main_widget)
+        self.stack.addWidget(login_widget)
+        self.stack.addWidget(signup_widget)
+        self.stack.addWidget(confirmation_widget)
 
-#API Secret
-tk.Label(signup_frame, text="Api secret", font=("Helvetica", 16)).pack(pady=10)
-api_secret = tk.Entry(signup_frame, width=30)
-api_secret.pack(pady=10)
+        # Add stack to main layout
+        main_layout.addLayout(self.stack)
 
-#Sign up button
-tk.Button(
-    signup_frame,
-    text="Sign up",
-    command=lambda: [sign_up(email.get(), password.get(), username.get(), api_key.get(), api_secret.get()), show_frame(confirmation_frame)]
-).pack(pady=10)
-sleep(1.5)
+        self.setLayout(main_layout)
 
-#Confirmation code
-tk.Label(confirmation_frame, text="Confirmation code", font=("Helvetica", 16)).pack(pady=10)
-confirmation_code = tk.Entry(confirmation_frame, width=30)
-confirmation_code.pack(pady=10)
-tk.Button(confirmation_frame, text="Confirm", command=lambda: confirm_sign_up(email.get(), confirmation_code.get())).pack(pady=10)
+    def get_secret_hash(self, username):
+        message = username + CLIENT_ID
+        dig = hmac.new(
+            CLIENT_SECRET.encode('utf-8'),
+            message.encode('utf-8'),
+            hashlib.sha256
+        ).digest()
+        return base64.b64encode(dig).decode()
+
+    def send_sign_up_data(self):
+        # Logic to send login info
+        email = self.email.text().strip()
+        username = self.username.text()
+        password = self.password.text()
+        api_key = self.api_key.text().strip()
+        api_secret = self.api_secret.text().strip()
+
+        secret_hash = self.get_secret_hash(email)
+
+        try:
+            response = client.sign_up(
+                ClientId=CLIENT_ID,
+                Username=email,  # This is the email, used as the 'Username'
+                Password=password,
+                SecretHash=secret_hash,
+                UserAttributes=[
+                    {'Name': 'email', 'Value': email},  # Use 'email' as the Username
+                    {'Name': 'custom:Username', 'Value': username},  # Store the custom username here
+                    {'Name': 'custom:ApiKey', 'Value': api_key},
+                    {'Name': 'custom:ApiSecret', 'Value': api_secret},
+                ]
+            )
+            print("Sign-up successful!")
+            time.sleep(1.5)
+
+            # Switch to confirmation code input
+            self.stack.setCurrentIndex(3)
+
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+
+    def send_confirmation_code(self):
+        # Confirm sign-up
+        self.stack.setCurrentIndex(3)
+        email = self.email.text().strip()
+        confirmation_code = self.confirmation_code.text().strip()  # Use the correct QLineEdit instance
+        try:
+            response = client.confirm_sign_up(
+                ClientId=CLIENT_ID,
+                Username=email,
+                ConfirmationCode=confirmation_code,  # Pass the confirmation code text
+                SecretHash=self.get_secret_hash(email),
+            )
+            print(response)
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+
+    def check_login_data(self):
+        # Call Cognito to authenticate
+        email = self.log_in_email.text().strip()
+        password = self.log_in_password.text()
+
+        try:
+            response = client.initiate_auth(
+                ClientId=CLIENT_ID,
+                AuthFlow='USER_PASSWORD_AUTH',
+                AuthParameters={
+                    'USERNAME': email,
+                    'PASSWORD': password,
+                    'SECRET_HASH': self.get_secret_hash(email)
+                }
+            )
+            print("Authentication successful!")
+            auth_result = response.get("AuthenticationResult")
+            if auth_result:
+                self.login_successful.emit(auth_result)  # Emit the authentication result
+            # You might want to close the login window here if successful
+            self.close()
+
+        except client.exceptions.NotAuthorizedException:
+            print("Incorrect username or password.")
+        except client.exceptions.UserNotConfirmedException:
+            print("User is not confirmed.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 
-#Back button
-for frame in (login_frame, signup_frame):
-    tk.Button(frame, text="Back", command=lambda: show_frame(main_frame)).pack()
-
-# Start with login
-show_frame(main_frame)
-
-root.mainloop()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = LoginSignupApp()
+    window.show()
+    sys.exit(app.exec())
