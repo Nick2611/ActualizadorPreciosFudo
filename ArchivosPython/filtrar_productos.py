@@ -2,7 +2,7 @@ import requests
 import json
 import sys
 from time import sleep
-from user_token import get_api_token
+from user_token import main
 
 
 def listar_categorias():
@@ -10,7 +10,7 @@ def listar_categorias():
         utilizada por el archivo pantalla_principal.py para mostrar las categorias en la ventana principal"""
 
     #Llama a la funcion get_api_token del programa user_token para conseguir el token utilizado en las autorizaciones
-    token = get_api_token()
+    token = main()
     autorizacion = f'Bearer {token}'
     categorias = {}
 
@@ -30,15 +30,18 @@ def listar_categorias():
         items = response.json()
         items_json_str = json.dumps(items)
         items_json = json.loads(items_json_str)
+        print(items_json)
     except requests.exceptions.HTTPError as errh:
         print(f"Error http {errh}")
         sleep(1)
         sys.exit(1)
 
-    #Extrae la informacion de las categorias y las guarda en un diccionario
+    # Extrae la informacion de las categorias y las guarda en un diccionario
     for objeto in items_json["data"]:
         nombre = objeto["attributes"]["name"]
         categorias[nombre] = objeto["id"]
 
     #Retorna el token y las categorias
     return token, categorias
+
+listar_categorias()
