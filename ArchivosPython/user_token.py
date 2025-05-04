@@ -24,7 +24,7 @@ def main():
         login_window.show()
         app.exec()  # Start the PyQt event loop
 
-        return user_tokens
+        return user_tokens, app
 
     def get_api_token(headers, data):
 
@@ -61,12 +61,15 @@ def main():
             print(f"Error al decodificar la respuesta JSON: {json_err}")
             sys.exit(1)  # Exit program
 
-    tokens = get_user_tokens()
+    tokens, app = get_user_tokens()
 
     # Check if tokens are received
     if tokens:
         claims = jwt.decode(tokens["id_token"], options={"verify_signature": False})
+        username = claims["custom:Username"]
         api_key, api_secret = claims["custom:ApiKey"], claims["custom:ApiSecret"]
+
+        app.setProperty("username", username)
         url = "https://auth.fu.do/api"
         headers = {
             "Accept": "application/json",
@@ -77,6 +80,5 @@ def main():
             "apiSecret": api_secret,
         }
 
-        return get_api_token(headers, data)
 
-    return None
+    return get_api_token(headers, data)
