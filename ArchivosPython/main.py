@@ -8,7 +8,7 @@ if __name__ == "__main__":
     # Iniciamos el login
     ventana_login = LoginSignupApp()
 
-    # Cuando el login es exitoso, se abre la pantalla principal
+    # Cuando el login es exitoso, se abre la pantalla principal.
     def abrir_menu_principal(auth_result):
         # Extrae el nombre del usuario de Cognito (puede cambiarse por username real).
         from jwt import decode

@@ -63,7 +63,7 @@ class PantallaPrincipal(QMainWindow):
 
         # Creación de los botones principales del sistema
         btn_stock = QPushButton("Gestión de Stock")
-        btn_stock.clicked.connect(self.abrir_gestion_stock) #conecto el botón de Gestión Stock
+        btn_stock.clicked.connect(self.abrir_gestion_stock) #conecto el botón de Gestión Stock.
         btn_precios = QPushButton("Actualización de Precios")
         btn_precios.clicked.connect(self.ejecutar_actualizador) #conecto el botón de Actualizar Precios
         btn_ganancias = QPushButton("Calculadora de Ganancias")

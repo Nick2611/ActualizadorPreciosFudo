@@ -24,7 +24,7 @@ def listar_categorias():
 
     }
 
-    #Manejo de excepciones a la hora de realizar el request de informacion
+    #Manejo de excepciones a la hora de realizar el request de informacion.
     try:
         response = requests.get(url, headers=headers)
         items = response.json()

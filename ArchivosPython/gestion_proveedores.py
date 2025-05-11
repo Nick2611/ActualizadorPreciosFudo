@@ -72,7 +72,7 @@ class GestionProveedores(QWidget):
         self.tabla.setItem(fila_actual, 1, QTableWidgetItem(contacto))
         self.tabla.setItem(fila_actual, 2, QTableWidgetItem(rubro))
 
-        # Limpiar inputs
+        # Limpiar inputs.
         self.input_nombre.clear()
         self.input_contacto.clear()
         self.input_rubro.clear()

@@ -19,7 +19,7 @@ class GestionStock(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        # Título de la pantalla
+        # Título de la pantalla.
         titulo = QLabel("📦 Inventario actual")
         titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         titulo.setStyleSheet("font-size: 24px; font-weight: bold;")

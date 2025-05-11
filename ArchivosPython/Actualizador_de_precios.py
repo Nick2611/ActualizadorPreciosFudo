@@ -17,7 +17,7 @@ def actualizador(categorias_filtradas, ruta, autorizacion):
         # Construye la URL del producto especifico
         product_url = base_url + producto["id"]
 
-        # Construye el payload para el PATCH request
+        # Construye el payload para el PATCH request.
         data = {
             "data": {
                 "id": objeto["id"],
