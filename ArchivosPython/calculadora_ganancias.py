@@ -21,7 +21,7 @@ class CalculadoraGanancias(QWidget):
         titulo.setStyleSheet("font-size: 22px; font-weight: bold;")
         layout.addWidget(titulo)
 
-        # Crear figura de matplotlib para insertar en el layout.
+        # Crear figura de matplotlib para insertar en el layout
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
