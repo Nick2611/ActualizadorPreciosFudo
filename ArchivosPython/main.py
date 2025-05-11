@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     # Cuando el login es exitoso, se abre la pantalla principal
     def abrir_menu_principal(auth_result):
-        # Extrae el nombre del usuario de Cognito (puede cambiarse por username real)
+        # Extrae el nombre del usuario de Cognito (puede cambiarse por username real).
         from jwt import decode
         claims = decode(auth_result.get('IdToken'), options={"verify_signature": False})
         username = claims.get("custom:Username", "Usuario")
