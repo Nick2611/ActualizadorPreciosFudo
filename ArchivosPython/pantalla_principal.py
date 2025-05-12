@@ -2,7 +2,6 @@ import sys
 from ArchivosPython.Actualizador_de_precios import actualizador
 from ArchivosPython.gestion_stock import GestionStock
 from ArchivosPython.calculadora_ganancias import CalculadoraGanancias
-from ArchivosPython.gestion_proveedores import GestionProveedores
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout
 )
