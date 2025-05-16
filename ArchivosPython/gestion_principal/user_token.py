@@ -3,7 +3,7 @@ import json
 import sys
 import requests
 from PyQt6.QtWidgets import QApplication
-from login_menu import LoginSignupApp  # Import your login menu application
+from ArchivosPython.inicio_sesion.login_menu import LoginSignupApp  # Import your login menu application
 from time import sleep
 
 def main():

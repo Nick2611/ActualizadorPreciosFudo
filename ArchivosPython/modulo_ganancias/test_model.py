@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
     Utilizo la libreria de analisis de datos pandas para cargar el archivo CSV que contiene la cantidad de ventas
     y el ticket promedio de un restaurante en los ultimos 4 meses.
 """
-df = pd.read_csv("restaurant_sales_4_months.csv")
+df = pd.read_csv("../restaurant_sales_4_months.csv")
 df["date"] = pd.to_datetime(df["date"])
 df["month"] = df["date"].dt.to_period("M")
 
@@ -20,7 +20,7 @@ df["month"] = df["date"].dt.to_period("M")
     que sea capaz de predecir el mes entero con solo una porcion de los datos.
 """
 
-DAYS_INPUT = 19
+DAYS_INPUT = 11
 
 # Crear X e y por mes, siendo X los datos de ventas y ticket promedio de los días e Y el total de ventas del mes
 samples = []
@@ -49,8 +49,8 @@ model.fit(X_train, y_train) #Entrenamos al modelo con la data
 # Evaluar
 y_pred = model.predict(X_test) #Predecimos los datos de prueba
 
-# print(y_pred) #Prediccion del mes
-# print(targets[0]) #Valor actual del total de ventas del mes
+print(y_pred) #Prediccion del mes
+print(targets[0]) #Valor actual del total de ventas del mes
 mae = mean_absolute_error(y_test, y_pred) #Error absoluto medio para evaluar el modelo
 print(mae)
 

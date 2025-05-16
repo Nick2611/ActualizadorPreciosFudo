@@ -51,7 +51,7 @@ class CalculadoraGanancias(QWidget):
         self.canvas.draw()
 
     def volver_a_menu(self):
-        from ArchivosPython.pantalla_principal import PantallaPrincipal
+        from ArchivosPython.gestion_principal.pantalla_principal import PantallaPrincipal
         self.close()
         self.menu = PantallaPrincipal()
         self.menu.show()

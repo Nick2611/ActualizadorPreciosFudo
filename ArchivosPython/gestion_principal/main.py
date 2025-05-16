@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from ArchivosPython.login_menu import LoginSignupApp
+from ArchivosPython.inicio_sesion.login_menu import LoginSignupApp
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
         app.setProperty("username", username)
 
-        from ArchivosPython.pantalla_principal import PantallaPrincipal
+        from ArchivosPython.gestion_principal.pantalla_principal import PantallaPrincipal
         ventana_menu = PantallaPrincipal()
         ventana_menu.show()
 

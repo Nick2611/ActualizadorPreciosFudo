@@ -4,9 +4,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import Qt
-from ArchivosPython.filtrar_productos import listar_categorias
+from ArchivosPython.modulo_precios.filtrar_productos import listar_categorias
 import requests
-import json
 
 
 class GestionStock(QWidget):
@@ -90,7 +89,7 @@ class GestionStock(QWidget):
 
     def volver_a_menu(self):
         # Cierra esta ventana y abre la pantalla principal
-        from ArchivosPython.pantalla_principal import PantallaPrincipal
+        from ArchivosPython.gestion_principal.pantalla_principal import PantallaPrincipal
         self.close()
         self.nueva_ventana = PantallaPrincipal()
         self.nueva_ventana.show()
